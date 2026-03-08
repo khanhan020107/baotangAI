@@ -457,17 +457,24 @@
   speechSynthesis.onvoiceschanged = () => pickVietnameseVoice();
   pickVietnameseVoice();
 
- function speak(text){
-
-  const url =
-    "https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=vi&q="
-    + encodeURIComponent(text);
-
-  const audio = new Audio(url);
-  audio.play();
-
-}
-
+  function speak(text){
+    try{
+      speechSynthesis.cancel();
+      const parts = text.split(".").map(s => s.trim()).filter(Boolean);
+      const speakPart = (i) => {
+        if(i >= parts.length) return;
+        const msg = new SpeechSynthesisUtterance(parts[i] + ".");
+        msg.lang = "vi-VN";
+        msg.voice = VI_VOICE || null;
+        msg.rate = 0.95;
+        msg.pitch = 1.0;
+        msg.volume = 1.0;
+        msg.onend = () => setTimeout(() => speakPart(i + 1), 140);
+        speechSynthesis.speak(msg);
+      };
+      speakPart(0);
+    }catch(e){}
+  }
 
   function updateTimelineStatic(){
     if(!$timelineToggle.checked){
@@ -700,5 +707,4 @@
   })();
 </script>
 </body>
-
 </html>
